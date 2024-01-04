@@ -1,5 +1,7 @@
 import {
+  EmptyMessageError,
   Message,
+  MessageTooLongError,
   PostMessageCommand,
   PostMessageUseCase,
 } from "../post-message.usecase";
@@ -22,11 +24,41 @@ describe("Feature: Posting a message", () => {
         publishedAt: new Date("2023-01-19T19:00:00.000Z"),
       });
     });
+
+    test("Alice cannot post a message with more than 280 characters", () => {
+      const textWithLengthOf281Characters = "a".repeat(281);
+
+      givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
+
+      whenUserPostsAMessage({
+        id: "message-id",
+        text: textWithLengthOf281Characters,
+        author: "Alice",
+      });
+
+      thenErrorShouldBe(MessageTooLongError);
+    });
+  });
+
+  describe("Rule: A message cannot be empty", () => {
+    test("Alice cannot post a message with an empty text", () => {
+      const emptyText = "";
+
+      givenNowIs(new Date("2023-01-19T19:00:00.000Z"));
+
+      whenUserPostsAMessage({
+        id: "message-id",
+        text: emptyText,
+        author: "Alice",
+      });
+
+      thenErrorShouldBe(EmptyMessageError);
+    });
   });
 });
 
 let message: Message;
-let now: Date;
+let thrownError: Error;
 
 class InMemoryMessageRepository {
   save(msg: Message) {
@@ -54,9 +86,17 @@ function givenNowIs(_now: Date) {
 }
 
 function whenUserPostsAMessage(postMessageCommand: PostMessageCommand) {
-  postMessageUseCase.handle(postMessageCommand);
+  try {
+    postMessageUseCase.handle(postMessageCommand);
+  } catch (error) {
+    thrownError = error;
+  }
 }
 
 function thenPostedMessageShouldBe(expectedMessage: Message) {
   expect(expectedMessage).toEqual(message);
+}
+
+function thenErrorShouldBe(expectedErrorClass: new () => Error) {
+  expect(thrownError).toBeInstanceOf(expectedErrorClass);
 }
