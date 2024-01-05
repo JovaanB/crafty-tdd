@@ -1,3 +1,4 @@
+import { InMemoryMessageRepository } from "../message.inmemory.repository";
 import {
   EmptyMessageError,
   Message,
@@ -76,13 +77,6 @@ describe("Feature: Posting a message", () => {
     });
   });
 });
-
-class InMemoryMessageRepository {
-  message: Message;
-  save(msg: Message) {
-    this.message = msg;
-  }
-}
 
 class StubDateProvider {
   now: Date;
