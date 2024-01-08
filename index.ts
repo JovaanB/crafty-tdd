@@ -4,7 +4,6 @@ import {
   PostMessageCommand,
   PostMessageUseCase,
 } from "./src/post-message.usecase";
-import { InMemoryMessageRepository } from "./src/message.inmemory.repository";
 import { FileSystemMessageRepository } from "./src/message.fs.repository";
 
 class RealDateProvider {
