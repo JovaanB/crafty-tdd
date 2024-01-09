@@ -5,6 +5,7 @@ import {
   PostMessageUseCase,
 } from "./src/post-message.usecase";
 import { FileSystemMessageRepository } from "./src/message.fs.repository";
+import { ViewTimelineUsecase } from "./src/view-timeline.usecase";
 
 class RealDateProvider {
   getNow(): Date {
@@ -18,6 +19,11 @@ const postMessageUseCase = new PostMessageUseCase(
   messageRepository,
   dateProvider
 );
+const viewTimelineUseCase = new ViewTimelineUsecase(
+  messageRepository,
+  dateProvider
+);
+
 const program = new Command();
 
 program
@@ -29,7 +35,7 @@ program
       .argument("<message>", "The message to post")
       .action(async (user, message) => {
         const postMessageCommand: PostMessageCommand = {
-          id: "some-id",
+          id: Math.round(Math.random() * 10000).toString(),
           author: user,
           text: message,
         };
@@ -37,6 +43,20 @@ program
         try {
           await postMessageUseCase.handle(postMessageCommand);
           console.log(`✔️ Message posté par ${user}: ${message}`);
+          process.exit(0);
+        } catch (error) {
+          console.error("❌ " + error);
+          process.exit(1);
+        }
+      })
+  )
+  .addCommand(
+    new Command("view")
+      .argument("<user>", "The user to view the timeline of")
+      .action(async (user) => {
+        try {
+          const timeline = await viewTimelineUseCase.handle({ user });
+          console.table(timeline);
           process.exit(0);
         } catch (error) {
           console.error("❌ " + error);

@@ -29,7 +29,7 @@ export class ViewTimelineUsecase {
   private publicationTime(publishedAt: Date) {
     const now = this.dateProvider.getNow();
     const diffInMs = now.getTime() - publishedAt.getTime();
-    const minutes = diffInMs / ONE_MINUTE_IN_MS;
+    const minutes = Math.floor(diffInMs / ONE_MINUTE_IN_MS);
 
     if (minutes < 1) {
       return "less than a minute ago";
