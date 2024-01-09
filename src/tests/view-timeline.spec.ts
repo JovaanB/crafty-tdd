@@ -1,4 +1,5 @@
 import { Message } from "../message";
+import { StubDateProvider } from "../stub-date-provider";
 import { InMemoryMessageRepository } from "../message.inmemory.repository";
 import { ViewTimelineUsecase } from "../view-timeline.usecase";
 
@@ -30,6 +31,12 @@ describe("Feature: Viewing a personnal timeline", () => {
           author: "Alice",
           publishedAt: new Date("2023-02-07T16:31:00.000Z"),
         },
+        {
+          id: "message-4",
+          text: "My last message",
+          author: "Alice",
+          publishedAt: new Date("2023-02-07T16:31:30.000Z"),
+        },
       ]);
 
       fixture.givenNowIs(new Date("2023-02-07T16:32:00.000Z"));
@@ -37,6 +44,11 @@ describe("Feature: Viewing a personnal timeline", () => {
       await fixture.whenUserSeesTheTimelineOf("Alice");
 
       fixture.thenUserShouldSee([
+        {
+          author: "Alice",
+          text: "My last message",
+          publicationTime: "less than a minute ago",
+        },
         {
           author: "Alice",
           text: "How are you all?",
@@ -55,13 +67,19 @@ describe("Feature: Viewing a personnal timeline", () => {
 const createFixture = () => {
   let timeline: { author: string; text: string; publicationTime: string }[];
   const messageRepository = new InMemoryMessageRepository();
-  const viewTimelineUseCase = new ViewTimelineUsecase(messageRepository);
+  const dateProvider = new StubDateProvider();
+  const viewTimelineUseCase = new ViewTimelineUsecase(
+    messageRepository,
+    dateProvider
+  );
 
   return {
     givenTheFollowingMessagesExist(messages: Message[]) {
       messageRepository.givenExistingMessages(messages);
     },
-    givenNowIs(now: Date) {},
+    givenNowIs(now: Date) {
+      dateProvider.now = now;
+    },
     async whenUserSeesTheTimelineOf(user: string) {
       timeline = await viewTimelineUseCase.handle({ user });
     },

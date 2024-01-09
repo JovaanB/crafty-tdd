@@ -6,6 +6,7 @@ import {
   PostMessageUseCase,
 } from "../post-message.usecase";
 import { Message } from "../message";
+import { StubDateProvider } from "../stub-date-provider";
 
 describe("Feature: Posting a message", () => {
   let fixture: ReturnType<typeof createFixture>;
@@ -77,13 +78,6 @@ describe("Feature: Posting a message", () => {
     });
   });
 });
-
-class StubDateProvider {
-  now: Date;
-  getNow() {
-    return this.now;
-  }
-}
 
 const createFixture = () => {
   const messageRepository = new InMemoryMessageRepository();
