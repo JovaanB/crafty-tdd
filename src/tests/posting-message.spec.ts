@@ -1,18 +1,15 @@
-import { InMemoryMessageRepository } from "../message.inmemory.repository";
 import {
   EmptyMessageError,
   MessageTooLongError,
-  PostMessageCommand,
-  PostMessageUseCase,
 } from "../post-message.usecase";
-import { Message } from "../message";
-import { StubDateProvider } from "../stub-date-provider";
+import { messageBuilder } from "./mesage.builder";
+import { MessagingFixture, createMessagingFixture } from "./messaging.fixture";
 
 describe("Feature: Posting a message", () => {
-  let fixture: ReturnType<typeof createFixture>;
+  let fixture: MessagingFixture;
 
   beforeEach(() => {
-    fixture = createFixture();
+    fixture = createMessagingFixture();
   });
 
   describe("Rule: A message can contain a maximum of 280 characters", () => {
@@ -25,12 +22,14 @@ describe("Feature: Posting a message", () => {
         author: "Alice",
       });
 
-      fixture.thenPostedMessageShouldBe({
-        id: "message-id",
-        text: "Hello world",
-        author: "Alice",
-        publishedAt: new Date("2023-01-19T19:00:00.000Z"),
-      });
+      fixture.thenMessageShouldBe(
+        messageBuilder()
+          .withId("message-id")
+          .withText("Hello world")
+          .authoredBy("Alice")
+          .withPublishedAt(new Date("2023-01-19T19:00:00.000Z"))
+          .build()
+      );
     });
 
     test("Alice cannot post a message with more than 280 characters", async () => {
@@ -78,35 +77,3 @@ describe("Feature: Posting a message", () => {
     });
   });
 });
-
-const createFixture = () => {
-  const messageRepository = new InMemoryMessageRepository();
-  const dateProvider = new StubDateProvider();
-  const postMessageUseCase = new PostMessageUseCase(
-    messageRepository,
-    dateProvider
-  );
-
-  let thrownError: Error;
-
-  return {
-    givenNowIs(now: Date) {
-      dateProvider.now = now;
-    },
-    async whenUserPostsAMessage(postMessageCommand: PostMessageCommand) {
-      try {
-        await postMessageUseCase.handle(postMessageCommand);
-      } catch (error) {
-        thrownError = error;
-      }
-    },
-    thenPostedMessageShouldBe(expectedMessage: Message) {
-      expect(expectedMessage).toEqual(
-        messageRepository.getMessageById(expectedMessage.id)
-      );
-    },
-    thenErrorShouldBe(expectedErrorClass: new () => Error) {
-      expect(thrownError).toBeInstanceOf(expectedErrorClass);
-    },
-  };
-};
