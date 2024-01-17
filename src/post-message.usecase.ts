@@ -1,3 +1,4 @@
+import { MessageText } from "./message";
 import { MessageRepository } from "./message.repository";
 
 export type PostMessageCommand = {
@@ -10,10 +11,6 @@ export interface DateProvider {
   getNow(): Date;
 }
 
-export class MessageTooLongError extends Error {}
-
-export class EmptyMessageError extends Error {}
-
 export class PostMessageUseCase {
   constructor(
     private readonly messageRepository: MessageRepository,
@@ -21,17 +18,11 @@ export class PostMessageUseCase {
   ) {}
 
   async handle(postMessageCommand: PostMessageCommand) {
-    if (postMessageCommand.text.trim().length === 0) {
-      throw new EmptyMessageError();
-    }
-
-    if (postMessageCommand.text.length > 280) {
-      throw new MessageTooLongError();
-    }
+    const messageText = MessageText.of(postMessageCommand.text);
 
     await this.messageRepository.save({
       id: postMessageCommand.id,
-      text: postMessageCommand.text,
+      text: messageText,
       author: postMessageCommand.author,
       publishedAt: this.dateProvider.getNow(),
     });
