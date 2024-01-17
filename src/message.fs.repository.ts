@@ -8,7 +8,14 @@ export class FileSystemMessageRepository implements MessageRepository {
 
   async save(message: Message): Promise<void> {
     const messages = await this.getMessages();
-    messages.push(message);
+
+    const messageIndex = messages.findIndex((msg) => msg.id === message.id);
+    if (messageIndex !== -1) {
+      messages[messageIndex] = message;
+    } else {
+      messages.push(message);
+    }
+
     return fs.promises.writeFile(this.messagePath, JSON.stringify(messages));
   }
 
@@ -33,5 +40,11 @@ export class FileSystemMessageRepository implements MessageRepository {
     const messages = await this.getMessages();
 
     return messages.filter((msg) => msg.author === user);
+  }
+
+  async getById(id: string): Promise<Message> {
+    const messages = await this.getMessages();
+
+    return messages.filter((msg) => msg.id === id)[0];
   }
 }

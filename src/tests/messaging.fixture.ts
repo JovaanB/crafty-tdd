@@ -6,25 +6,30 @@ import {
 import { Message } from "../message";
 import { StubDateProvider } from "../stub-date-provider";
 import { ViewTimelineUsecase } from "../view-timeline.usecase";
+import {
+  EditMessageCommand,
+  EditMessageUseCase,
+} from "../edit-message.usecase";
 
 export const createMessagingFixture = () => {
   const messageRepository = new InMemoryMessageRepository();
   const dateProvider = new StubDateProvider();
-  const postMessageUseCase = new PostMessageUseCase(
-    messageRepository,
-    dateProvider
-  );
   let timeline: {
     author: string;
     text: string;
     publicationTime: string;
   }[];
+  let thrownError: Error;
+
+  const postMessageUseCase = new PostMessageUseCase(
+    messageRepository,
+    dateProvider
+  );
+  const editMessageUseCase = new EditMessageUseCase(messageRepository);
   const viewTimelineUseCase = new ViewTimelineUsecase(
     messageRepository,
     dateProvider
   );
-
-  let thrownError: Error;
 
   return {
     givenNowIs(now: Date) {
@@ -40,17 +45,19 @@ export const createMessagingFixture = () => {
         thrownError = error;
       }
     },
-    async whenUserEditsAMessage(message: {
-      messageId: string;
-      text: string;
-    }) {},
+    async whenUserEditsAMessage(editMessageCommand: EditMessageCommand) {
+      try {
+        await editMessageUseCase.handle(editMessageCommand);
+      } catch (error) {
+        thrownError = error;
+      }
+    },
     async whenUserSeesTheTimelineOf(user: string) {
       timeline = await viewTimelineUseCase.handle({ user });
     },
-    thenMessageShouldBe(expectedMessage: Message) {
-      expect(expectedMessage).toEqual(
-        messageRepository.getMessageById(expectedMessage.id)
-      );
+    async thenMessageShouldBe(expectedMessage: Message) {
+      const message = await messageRepository.getById(expectedMessage.id);
+      expect(expectedMessage).toEqual(expectedMessage);
     },
     thenUserShouldSee(
       expectedTimeline: {
