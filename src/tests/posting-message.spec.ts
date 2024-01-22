@@ -1,5 +1,5 @@
 import { messageBuilder } from "./mesage.builder";
-import { MessageTooLongError, EmptyMessageError } from "../message";
+import { MessageTooLongError, EmptyMessageError } from "../domain/message";
 import { MessagingFixture, createMessagingFixture } from "./messaging.fixture";
 
 describe("Feature: Posting a message", () => {

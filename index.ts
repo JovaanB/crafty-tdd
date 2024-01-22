@@ -3,16 +3,14 @@ import { Command } from "commander";
 import {
   PostMessageCommand,
   PostMessageUseCase,
-} from "./src/post-message.usecase";
-import { FileSystemMessageRepository } from "./src/message.fs.repository";
-import { ViewTimelineUsecase } from "./src/view-timeline.usecase";
-import { EditMessageCommand, EditMessageUseCase } from "./src/edit-message.usecase";
-
-class RealDateProvider {
-  getNow(): Date {
-    return new Date();
-  }
-}
+} from "./src/application/usecases/post-message.usecase";
+import { FileSystemMessageRepository } from "./src/infra/message.fs.repository";
+import { ViewTimelineUsecase } from "./src/application/usecases/view-timeline.usecase";
+import {
+  EditMessageCommand,
+  EditMessageUseCase,
+} from "./src/application/usecases/edit-message.usecase";
+import { RealDateProvider } from "./src/infra/real-date-provider";
 
 const messageRepository = new FileSystemMessageRepository();
 const dateProvider = new RealDateProvider();
