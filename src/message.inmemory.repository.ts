@@ -10,11 +10,11 @@ export class InMemoryMessageRepository implements MessageRepository {
   }
 
   getById(messageId: string): Promise<Message> {
-    return Promise.resolve(this.messages.get(messageId)!);
+    return Promise.resolve(this.getMessageById(messageId));
   }
 
   getMessageById(messageId: string) {
-    return this.messages.get(messageId);
+    return this.messages.get(messageId)!;
   }
 
   givenExistingMessages(messages: Message[]) {
@@ -23,14 +23,16 @@ export class InMemoryMessageRepository implements MessageRepository {
 
   getAllOfUser(user: string): Promise<Message[]> {
     return Promise.resolve(
-      Array.from(this.messages.values())
+      [...this.messages.values()]
         .filter((msg) => msg.author === user)
-        .map((msg) => ({
-          id: msg.id,
-          author: msg.author,
-          text: msg.text,
-          publishedAt: msg.publishedAt,
-        }))
+        .map((m) =>
+          Message.fromData({
+            id: m.id,
+            author: m.author,
+            text: m.text,
+            publishedAt: m.publishedAt,
+          })
+        )
     );
   }
 
