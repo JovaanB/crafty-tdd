@@ -57,7 +57,7 @@ export const createMessagingFixture = () => {
     },
     async thenMessageShouldBe(expectedMessage: Message) {
       const message = await messageRepository.getById(expectedMessage.id);
-      expect(expectedMessage).toEqual(expectedMessage);
+      expect(message).toEqual(expectedMessage);
     },
     thenUserShouldSee(
       expectedTimeline: {
