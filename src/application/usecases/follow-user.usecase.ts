@@ -1,4 +1,4 @@
-import { InMemoryFolloweeRepository } from "../../infra/followee.inmemory.repository";
+import { FolloweeRepository } from "../followee.repository";
 
 export type FollowUserCommand = {
   user: string;
@@ -6,9 +6,7 @@ export type FollowUserCommand = {
 };
 
 export class FollowUserUseCase {
-  constructor(
-    private readonly followeeRepository: InMemoryFolloweeRepository
-  ) {}
+  constructor(private readonly followeeRepository: FolloweeRepository) {}
 
   async handle(followUserCommand: FollowUserCommand) {
     return this.followeeRepository.saveFollowee({
